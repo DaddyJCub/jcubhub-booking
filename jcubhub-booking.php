@@ -21,16 +21,23 @@ require_once plugin_dir_path(__FILE__) . 'includes/booking-form.php';
 require_once plugin_dir_path(__FILE__) . 'includes/admin-panel.php';
 
 // Enqueue styles/scripts (frontend)
+// Enqueue styles/scripts (frontend)
 function jcubhub_enqueue_scripts() {
+    // Always enqueue jQuery first
     wp_enqueue_script('jquery');
-    wp_enqueue_script('fullcalendar', 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js', [], null, true);
-    wp_enqueue_style('fullcalendar-css', 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css');
-    wp_enqueue_style('jcubhub-style', plugins_url('/assets/jcubhub-booking.css', __FILE__));
+    
+    // Enqueue FullCalendar with jQuery dependency
+    wp_enqueue_script('fullcalendar', 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js', array('jquery'), '6.1.8', true);
+    wp_enqueue_style('fullcalendar-css', 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css', array(), '6.1.8');
+    
+    // Enqueue plugin styles
+    wp_enqueue_style('jcubhub-style', plugins_url('/assets/jcubhub-booking.css', __FILE__), array(), '1.0');
 
-    wp_localize_script('jquery', 'jcubhub_ajax', [
+    // Localize script with AJAX data
+    wp_localize_script('jquery', 'jcubhub_ajax', array(
         'ajaxurl' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('jcubhub-nonce')
-    ]);
+    ));
 }
 add_action('wp_enqueue_scripts', 'jcubhub_enqueue_scripts');
 

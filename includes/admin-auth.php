@@ -3,9 +3,12 @@ if (!defined('ABSPATH')) exit;
 
 // Start session for admin handling
 function jcubhub_start_session() {
-    if (!session_id()) session_start();
+    if (!session_id() && !headers_sent()) {
+        session_start();
+    }
 }
-add_action('init', 'jcubhub_start_session');
+// Start session early with high priority
+add_action('init', 'jcubhub_start_session', 1);
 
 // Admin login/logout logic (with multiple admins)
 function jcubhub_handle_admin_login() {

@@ -99,62 +99,133 @@ function jcubhub_admin_panel() {
         <div style="margin:14px 0 24px 0;">
             <button id="unavail-select-btn" style="background:#b0b0b0;color:#fff;border:none;padding:10px 18px;border-radius:9px;font-weight:600;cursor:pointer;">Mark/Unmark Unavailable Date(s)</button>
         </div>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('admin-calendar');
-            var unavailable = <?php echo json_encode($unavail); ?>;
-            var selected = [];
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                selectable: true,
-                height: 'auto',
-                events: <?php echo json_encode($events); ?>,
-                dateClick: function(info) {
-                    var date = info.dateStr;
-                    if (selected.includes(date)) {
-                        selected = selected.filter(d => d !== date);
-                        info.dayEl.classList.remove('selected-date');
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Admin panel JavaScript loading...');
+    
+    // Check if jQuery is available
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery is not loaded! Cannot proceed.');
+        alert('There is a JavaScript loading issue. Please refresh the page.');
+        return;
+    }
+    
+    console.log('jQuery is loaded, version:', jQuery.fn.jquery);
+    console.log('AJAX URL:', jcubhub_ajax.ajaxurl);
+    
+    var calendarEl = document.getElementById('admin-calendar');
+    if (!calendarEl) {
+        console.error('Calendar element not found!');
+        return;
+    }
+    
+    var unavailable = <?php echo json_encode($unavail); ?>;
+    var selected = [];
+    
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        selectable: true,
+        height: 'auto',
+        events: <?php echo json_encode($events); ?>,
+        dateClick: function(info) {
+            var date = info.dateStr;
+            if (selected.includes(date)) {
+                selected = selected.filter(d => d !== date);
+                info.dayEl.classList.remove('selected-date');
+            } else {
+                selected.push(date);
+                info.dayEl.classList.add('selected-date');
+            }
+            console.log('Currently selected dates:', selected);
+        },
+        dayCellDidMount: function(arg) {
+            var date = arg.date.toISOString().slice(0,10);
+            if (unavailable.includes(date)) {
+                arg.el.style.background = '#b0b0b0';
+                arg.el.style.color = '#fff';
+                arg.el.title = "Unavailable";
+                arg.el.classList.add('unavail-date');
+            }
+        }
+    });
+    
+    calendar.render();
+
+    // Mark/Unmark Unavailable button
+    document.getElementById('unavail-select-btn').onclick = function() {
+        if (selected.length === 0) {
+            alert("Please select date(s) on the calendar first.");
+            return;
+        }
+        
+        console.log('Processing dates:', selected);
+        
+        // Check if all selected dates are already unavailable
+        var all_unavail = selected.every(date => unavailable.includes(date));
+        
+        if (all_unavail) {
+            // Remove each date individually
+            console.log('Removing unavailable dates...');
+            var completed = 0;
+            var errors = 0;
+            
+            selected.forEach(function(date) {
+                jQuery.ajax({
+                    url: jcubhub_ajax.ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'jcubhub_unavail_remove',
+                        date: date,
+                        nonce: jcubhub_ajax.nonce
+                    },
+                    success: function(response) {
+                        completed++;
+                        console.log('Removed date:', date, response);
+                        if (completed === selected.length) {
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        errors++;
+                        console.error('Error removing date:', date, error);
+                        if (completed + errors === selected.length) {
+                            alert('Some dates could not be removed. Please try again.');
+                            location.reload();
+                        }
+                    }
+                });
+            });
+        } else {
+            // Add all selected dates as unavailable
+            console.log('Adding unavailable dates...');
+            jQuery.ajax({
+                url: jcubhub_ajax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'jcubhub_unavail_add',
+                    dates: selected.join(','),
+                    nonce: jcubhub_ajax.nonce
+                },
+                success: function(response) {
+                    console.log('Add response:', response);
+                    if (response.success) {
+                        alert(response.data.message || 'Dates marked as unavailable');
+                        location.reload();
                     } else {
-                        selected.push(date);
-                        info.dayEl.classList.add('selected-date');
+                        alert('Error: ' + (response.data || 'Unknown error'));
                     }
                 },
-                dayCellDidMount: function(arg) {
-                    var date = arg.date.toISOString().slice(0,10);
-                    if (unavailable.includes(date)) {
-                        arg.el.style.background = '#b0b0b0';
-                        arg.el.style.color = '#fff';
-                        arg.el.title = "Unavailable";
-                        arg.el.classList.add('unavail-date');
-                    }
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', xhr.responseText);
+                    alert('Error adding unavailable dates. Please check the console and try again.');
                 }
             });
-            calendar.render();
-
-            document.getElementById('unavail-select-btn').onclick = function() {
-                if (selected.length === 0) {
-                    alert("Please select date(s) on the calendar first.");
-                    return;
-                }
-                var all_unavail = selected.every(date => unavailable.includes(date));
-                if (all_unavail) {
-                    selected.forEach(date => {
-                        jQuery.post(jcubhub_ajax.ajaxurl, {
-                            action: 'jcubhub_unavail_remove',
-                            date: date,
-                            nonce: jcubhub_ajax.nonce
-                        }, function() { location.reload(); });
-                    });
-                } else {
-                    jQuery.post(jcubhub_ajax.ajaxurl, {
-                        action: 'jcubhub_unavail_add',
-                        dates: selected.join(','),
-                        nonce: jcubhub_ajax.nonce
-                    }, function() { location.reload(); });
-                }
-            };
-        });
-        </script>
+        }
+    };
+});
+</script>
         <div class="admin-table-container">
             <?php
             if (!function_exists('jcubhub_booking_table')) {
@@ -253,25 +324,146 @@ function jcubhub_admin_panel() {
                 <button type="submit" name="jcubhub_save_reminder_settings" style="margin-top:15px;">Save Settings</button>
             </form>
         </div>
-        <script>
-        document.querySelectorAll(".approve-btn").forEach(btn => {
-            btn.addEventListener("click", () => handleAction(btn.dataset.id, 'approved'));
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Booking actions JavaScript loading...');
+    
+    // Approve buttons
+    document.querySelectorAll(".approve-btn").forEach(btn => {
+        btn.addEventListener("click", function(e) {
+            e.preventDefault();
+            if (confirm('Approve this booking?')) {
+                handleAction(btn.dataset.id, 'approved', btn);
+            }
         });
-        document.querySelectorAll(".reject-btn").forEach(btn => {
-            btn.addEventListener("click", () => handleAction(btn.dataset.id, 'rejected'));
+    });
+    
+    // Reject buttons
+    document.querySelectorAll(".reject-btn").forEach(btn => {
+        btn.addEventListener("click", function(e) {
+            e.preventDefault();
+            if (confirm('Reject this booking?')) {
+                handleAction(btn.dataset.id, 'rejected', btn);
+            }
         });
-        document.querySelectorAll(".delete-btn").forEach(btn => {
-            btn.addEventListener("click", () => handleAction(btn.dataset.id, 'deleted'));
+    });
+    
+    // Delete buttons
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", function(e) {
+            e.preventDefault();
+            if (confirm('Delete this booking permanently? This cannot be undone.')) {
+                handleAction(btn.dataset.id, 'deleted', btn);
+            }
         });
-        function handleAction(id, action) {
-            fetch(jcubhub_ajax.ajaxurl, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `action=jcubhub_manage_booking&id=${id}&status=${action}&nonce=${jcubhub_ajax.nonce}`
-            }).then(() => window.location.reload());
-        }
-        </script>
-    </div>
+    });
+    
+    function handleAction(id, action, buttonElement) {
+        console.log('Handling action:', action, 'for booking ID:', id);
+        
+        // Disable the button and show loading state
+        var originalText = buttonElement.textContent;
+        buttonElement.textContent = 'Processing...';
+        buttonElement.disabled = true;
+        
+        // Make the AJAX request
+        jQuery.ajax({
+            url: jcubhub_ajax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'jcubhub_manage_booking',
+                id: id,
+                status: action,
+                nonce: jcubhub_ajax.nonce
+            },
+            success: function(response) {
+                console.log('Server response:', response);
+                if (response.success) {
+                    // Success - reload the page to show updated data
+                    window.location.reload();
+                } else {
+                    // Error - show message and restore button
+                    alert('Error: ' + (response.data || 'Unknown error occurred'));
+                    buttonElement.textContent = originalText;
+                    buttonElement.disabled = false;
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText
+                });
+                alert('Connection error. Please check your internet connection and try again.');
+                buttonElement.textContent = originalText;
+                buttonElement.disabled = false;
+            }
+        });
+    }
+});
+</script>
+ <script>
+// Add data-labels for mobile table display
+document.addEventListener('DOMContentLoaded', function() {
+    // Only run on mobile
+    if (window.innerWidth <= 768) {
+        // Get all admin tables
+        var tables = document.querySelectorAll('.admin-table');
+        
+        tables.forEach(function(table) {
+            // Get headers from this specific table
+            var headers = table.querySelectorAll('th');
+            var headerTexts = [];
+            
+            headers.forEach(function(header) {
+                headerTexts.push(header.textContent.trim());
+            });
+            
+            // Apply labels to each row's cells
+            var rows = table.querySelectorAll('tbody tr');
+            rows.forEach(function(row) {
+                var cells = row.querySelectorAll('td');
+                cells.forEach(function(cell, index) {
+                    if (headerTexts[index]) {
+                        // Skip the "Actions" label for action buttons
+                        if (headerTexts[index] === 'Actions') {
+                            cell.setAttribute('data-label', '');
+                        } else {
+                            cell.setAttribute('data-label', headerTexts[index] + ':');
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Special handling for status badges to ensure they display inline
+        document.querySelectorAll('.status-badge').forEach(function(badge) {
+            badge.style.display = 'inline-block';
+        });
+    }
+});
+
+// Also run on window resize
+window.addEventListener('resize', function() {
+    if (window.innerWidth <= 768) {
+        // Re-run the labeling if needed
+        var tables = document.querySelectorAll('.admin-table');
+        tables.forEach(function(table) {
+            var firstRow = table.querySelector('tbody tr');
+            if (firstRow) {
+                var firstCell = firstRow.querySelector('td');
+                // Check if labels already applied
+                if (!firstCell.hasAttribute('data-label')) {
+                    // Re-apply labels
+                    location.reload(); // Simple solution: reload to reapply
+                }
+            }
+        });
+    }
+});
+</script>   
+</div>
 
 <?php
 $log_path = plugin_dir_path(__FILE__) . '../jcubhub-bot-log.txt';

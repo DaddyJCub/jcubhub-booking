@@ -1,98 +1,173 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-// Manage bookings -- allow admin panel to always override!
-add_action('wp_ajax_jcubhub_manage_booking', 'jcubhub_manage_booking');
-function jcubhub_manage_booking() {
-    check_ajax_referer('jcubhub-nonce', 'nonce');
+// IMPORTANT: Add both wp_ajax and wp_ajax_nopriv for ALL actions
+// This ensures they work whether WordPress considers user "logged in" or not
 
+// Manage bookings - works for custom admin sessions
+add_action('wp_ajax_jcubhub_manage_booking', 'jcubhub_manage_booking');
+add_action('wp_ajax_nopriv_jcubhub_manage_booking', 'jcubhub_manage_booking');
+
+function jcubhub_manage_booking() {
+    // Check the nonce first
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'jcubhub-nonce')) {
+        wp_send_json_error('Security check failed. Please refresh the page and try again.');
+        wp_die();
+    }
+    
+    // Start session if not started
+    if (!session_id()) {
+        session_start();
+    }
+    
+    // Check if admin is logged in via our custom session
+    if (!isset($_SESSION['jcubhub_admin'])) {
+        wp_send_json_error('You must be logged in as admin to perform this action.');
+        wp_die();
+    }
+    
     global $wpdb;
     $id = intval($_POST['id']);
     $status = sanitize_text_field($_POST['status']);
     $table = $wpdb->prefix . "jcubhub_bookings";
-    $user = isset($_SESSION['jcubhub_admin']) ? $_SESSION['jcubhub_admin'] : 'admin';
+    $user = $_SESSION['jcubhub_admin'];
 
+    // Perform the action based on status
     if ($status === 'approved') {
-        $wpdb->update($table, ['status' => $status, 'approved_by' => $user], ['id' => $id]);
+        $result = $wpdb->update(
+            $table, 
+            ['status' => 'approved', 'approved_by' => $user], 
+            ['id' => $id],
+            ['%s', '%s'],
+            ['%d']
+        );
     } elseif ($status === 'rejected') {
-        $wpdb->update($table, ['status' => $status], ['id' => $id]);
+        $result = $wpdb->update(
+            $table, 
+            ['status' => 'rejected'], 
+            ['id' => $id],
+            ['%s'],
+            ['%d']
+        );
     } elseif ($status === 'deleted') {
-        $wpdb->delete($table, ['id' => $id]);
+        $result = $wpdb->delete($table, ['id' => $id], ['%d']);
+    } else {
+        wp_send_json_error('Invalid action specified.');
+        wp_die();
     }
-    wp_send_json_success();
+    
+    // Check if the database operation was successful
+    if ($result === false) {
+        wp_send_json_error('Database error. Please try again.');
+    } else {
+        wp_send_json_success(['message' => 'Booking ' . $status . ' successfully']);
+    }
+    
     wp_die();
 }
 
-// Add/Remove unavailable dates
-add_action('wp_ajax_jcubhub_unavail_add', function() {
-    check_ajax_referer('jcubhub-nonce', 'nonce');
-    if (!isset($_SESSION['jcubhub_admin'])) wp_send_json_error('Unauthorized');
+// Add unavailable dates
+add_action('wp_ajax_jcubhub_unavail_add', 'jcubhub_unavail_add');
+add_action('wp_ajax_nopriv_jcubhub_unavail_add', 'jcubhub_unavail_add');
+
+function jcubhub_unavail_add() {
+    // Check nonce
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'jcubhub-nonce')) {
+        wp_send_json_error('Security check failed. Please refresh the page and try again.');
+        wp_die();
+    }
+    
+    // Start session if needed
+    if (!session_id()) {
+        session_start();
+    }
+    
+    // Check admin session
+    if (!isset($_SESSION['jcubhub_admin'])) {
+        wp_send_json_error('You must be logged in as admin to perform this action.');
+        wp_die();
+    }
+    
     global $wpdb;
     $dates = explode(',', sanitize_text_field($_POST['dates']));
     $table = $wpdb->prefix . "jcubhub_unavailable";
+    $added_count = 0;
+    $already_exists = 0;
+    
     foreach ($dates as $date) {
+        $date = trim($date);
+        // Validate date format
         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-            $wpdb->insert($table, ['date' => $date], ['%s']);
+            // Check if date already exists
+            $exists = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM $table WHERE date = %s", 
+                $date
+            ));
+            
+            if ($exists) {
+                $already_exists++;
+            } else {
+                $result = $wpdb->insert(
+                    $table, 
+                    ['date' => $date], 
+                    ['%s']
+                );
+                if ($result) {
+                    $added_count++;
+                }
+            }
         }
     }
-    wp_send_json_success();
+    
+    $message = "Added $added_count unavailable date(s).";
+    if ($already_exists > 0) {
+        $message .= " $already_exists date(s) were already marked unavailable.";
+    }
+    
+    wp_send_json_success(['message' => $message, 'added' => $added_count]);
     wp_die();
-});
+}
 
-add_action('wp_ajax_jcubhub_unavail_remove', function() {
-    check_ajax_referer('jcubhub-nonce', 'nonce');
-    if (!isset($_SESSION['jcubhub_admin'])) wp_send_json_error('Unauthorized');
+// Remove unavailable dates
+add_action('wp_ajax_jcubhub_unavail_remove', 'jcubhub_unavail_remove');
+add_action('wp_ajax_nopriv_jcubhub_unavail_remove', 'jcubhub_unavail_remove');
+
+function jcubhub_unavail_remove() {
+    // Check nonce
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'jcubhub-nonce')) {
+        wp_send_json_error('Security check failed. Please refresh the page and try again.');
+        wp_die();
+    }
+    
+    // Start session if needed
+    if (!session_id()) {
+        session_start();
+    }
+    
+    // Check admin session
+    if (!isset($_SESSION['jcubhub_admin'])) {
+        wp_send_json_error('You must be logged in as admin to perform this action.');
+        wp_die();
+    }
+    
     global $wpdb;
     $date = sanitize_text_field($_POST['date']);
     $table = $wpdb->prefix . "jcubhub_unavailable";
-    $wpdb->delete($table, ['date' => $date]);
-    wp_send_json_success();
-    wp_die();
-});
-
-// Optional future-proof: Booking via AJAX (uses same protections)
-add_action('wp_ajax_nopriv_jcubhub_ajax_booking', 'jcubhub_ajax_booking_handler');
-add_action('wp_ajax_jcubhub_ajax_booking', 'jcubhub_ajax_booking_handler');
-function jcubhub_ajax_booking_handler() {
-    global $wpdb;
-
-    // Honeypot field check
-    if (!empty($_POST['company'])) {
-        wp_send_json_error("Bot detected.");
-        return;
+    
+    // Delete the date
+    $result = $wpdb->delete(
+        $table, 
+        ['date' => $date],
+        ['%s']
+    );
+    
+    if ($result === false) {
+        wp_send_json_error('Database error. Could not remove date.');
+    } elseif ($result === 0) {
+        wp_send_json_error('Date was not found in unavailable list.');
+    } else {
+        wp_send_json_success(['message' => 'Date removed from unavailable list.']);
     }
-
-    $name   = sanitize_text_field($_POST['name']);
-    $email  = sanitize_email($_POST['email']);
-    $reason = sanitize_textarea_field($_POST['reason']);
-    $dates  = sanitize_text_field($_POST['dates']);
-    $reminder_optin = isset($_POST['reminder_optin']) ? 1 : 0;
-
-    // Email allow-list check
-    $allowed_domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'aol.com', 'protonmail.com', 'pm.me', 'live.com', 'me.com'];
-    $email_domain = strtolower(substr(strrchr($email, "@"), 1));
-    if (!in_array($email_domain, $allowed_domains)) {
-        wp_send_json_error("Email domain not allowed.");
-        return;
-    }
-
-    if (empty($name) || empty($email) || empty($dates)) {
-        wp_send_json_error("Missing required fields.");
-        return;
-    }
-
-    $table_name = $wpdb->prefix . "jcubhub_bookings";
-    $wpdb->insert($table_name, [
-        'name' => $name,
-        'email' => $email,
-        'reason' => $reason,
-        'dates' => $dates,
-        'status' => 'pending',
-        'created_at' => current_time('mysql'),
-        'approved_by' => '',
-        'reminder_optin' => $reminder_optin
-    ]);
-
-    wp_send_json_success("Booking submitted.");
+    
     wp_die();
 }

@@ -449,3 +449,617 @@ button:hover {
 .admin-toggle-btn:hover {
     filter: brightness(0.94);
 }
+/* Add to assets/jcubhub-booking.css */
+
+/* ==================================
+   MOBILE RESPONSIVE FIXES
+   Add this to your assets/jcubhub-booking.css file
+   ================================== */
+
+/* Fix container overflow issues */
+.booking-container {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Mobile styles - starting at 768px and below */
+@media (max-width: 768px) {
+    /* Main container adjustments */
+    .booking-container {
+        display: block !important;
+        padding: 10px;
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Booking form - full width on mobile */
+    #jcubhub-booking-form {
+        flex: none;
+        width: 100%;
+        max-width: 100%;
+        padding: 20px 15px;
+        margin: 0 0 20px 0;
+        box-sizing: border-box;
+        border-radius: 8px;
+    }
+    
+    /* Form inputs - touch-friendly */
+    #jcubhub-booking-form input[type="text"],
+    #jcubhub-booking-form input[type="email"],
+    #jcubhub-booking-form textarea {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px; /* Prevents zoom on iOS */
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        border-radius: 6px;
+    }
+    
+    /* Labels */
+    #jcubhub-booking-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    /* Checkbox wrapper */
+    .jcubhub-reminder-wrap {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 15px 0;
+    }
+    
+    .jcubhub-reminder-wrap input[type="checkbox"] {
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+    
+    .jcubhub-reminder-label {
+        font-size: 14px;
+        line-height: 1.3;
+        flex: 1;
+    }
+    
+    /* Submit button - full width on mobile */
+    #jcubhub-booking-form button[type="submit"] {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 6px;
+        background: #007bff;
+        color: white;
+        border: none;
+        margin-top: 15px;
+    }
+    
+    /* Calendar column - full width */
+    .calendar-column {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+    
+    /* Calendar container - prevent overflow */
+    #calendar, #admin-calendar {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: unset !important;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+    
+    /* FullCalendar mobile adjustments */
+    .fc {
+        font-size: 0.9em;
+    }
+    
+    .fc .fc-toolbar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 5px;
+    }
+    
+    .fc .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .fc .fc-toolbar-title {
+        font-size: 1.1em;
+        margin: 5px 0;
+    }
+    
+    .fc .fc-button-group {
+        display: flex;
+        width: 100%;
+    }
+    
+    .fc .fc-button {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    /* Calendar grid adjustments */
+    .fc .fc-daygrid-day {
+        min-height: 35px;
+        font-size: 12px;
+    }
+    
+    .fc .fc-daygrid-day-number {
+        font-size: 12px;
+        padding: 2px;
+    }
+    
+    .fc .fc-col-header-cell {
+        padding: 5px 2px;
+        font-size: 12px;
+    }
+    
+    /* Today and Clear buttons */
+    .calendar-column > div:nth-child(2) {
+        display: flex;
+        gap: 8px;
+        padding: 10px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    #today-btn, #clear-dates-btn {
+        flex: 1;
+        padding: 10px 15px;
+        font-size: 14px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 600;
+    }
+    
+    /* Calendar legend - responsive */
+    .jcubhub-calendar-legend {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 15px;
+        margin: 10px;
+        max-width: calc(100% - 20px);
+        box-sizing: border-box;
+        font-size: 13px;
+    }
+    
+    .jcubhub-calendar-legend span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+    }
+    
+    .legend-box {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+    
+    /* Success/Error messages */
+    .success-message, .error-message {
+        margin: 10px;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        position: relative;
+        word-wrap: break-word;
+    }
+    
+    /* Admin panel adjustments */
+    .admin-panel-mainbox {
+        padding: 15px 10px;
+        border-radius: 10px;
+        margin: 10px;
+    }
+    
+    .admin-panel-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .admin-panel-header h2 {
+        font-size: 1.3em;
+        margin: 0;
+    }
+    
+    .logout-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+    
+    /* Admin table for mobile */
+    .admin-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 10px 0;
+    }
+    
+    .admin-table {
+        font-size: 12px;
+        min-width: 600px;
+    }
+    
+    .admin-table th, .admin-table td {
+        padding: 8px 5px;
+        font-size: 12px;
+    }
+    
+    /* Action buttons in table */
+    .action-btns {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .action-btns button {
+        padding: 5px 8px;
+        font-size: 11px;
+        min-width: unset;
+    }
+    
+    /* Status badges */
+    .status-badge {
+        padding: 4px 8px;
+        font-size: 11px;
+        min-width: unset;
+    }
+}
+
+/* Even smaller screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+    #jcubhub-booking-form {
+        padding: 15px 10px;
+    }
+    
+    .jcubhub-calendar-legend {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        font-size: 12px;
+    }
+    
+    .fc .fc-toolbar-title {
+        font-size: 1em;
+    }
+    
+    .fc .fc-button {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    
+    .fc .fc-daygrid-day {
+        min-height: 30px;
+    }
+    
+    .fc .fc-daygrid-day-number {
+        font-size: 11px;
+    }
+}
+
+/* Prevent horizontal scroll on body */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Ensure all containers respect viewport width */
+    .booking-container,
+    #jcubhub-booking-form,
+    .calendar-column,
+    #calendar {
+        max-width: 100vw;
+    }
+}
+
+/* Fix for that green "already logged in" message */
+@media (max-width: 768px) {
+    .admin-login-box {
+        max-width: calc(100% - 20px);
+        margin: 20px 10px;
+        padding: 20px 15px;
+    }
+    
+    .admin-panel-btn {
+        display: block;
+        width: 100%;
+        margin: 10px 0 !important;
+        padding: 12px;
+        text-align: center;
+    }
+}
+
+/* Touch-friendly hover states */
+@media (hover: none) and (pointer: coarse) {
+    .fc-daygrid-day:active {
+        opacity: 0.8;
+    }
+    
+    button:active {
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
+}
+
+/* ==================================
+   FIXED ADMIN PANEL MOBILE CARDS
+   Replace the previous admin panel mobile CSS with this
+   ================================== */
+
+@media screen and (max-width: 768px) {
+    /* Admin Panel Container */
+    .admin-panel-mainbox {
+        padding: 10px !important;
+        margin: 5px !important;
+        width: calc(100% - 10px) !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Header section */
+    .admin-panel-header {
+        display: block !important;
+        text-align: center !important;
+        padding-bottom: 15px !important;
+        border-bottom: 2px solid #eee !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .admin-panel-header h2 {
+        font-size: 1.4em !important;
+        margin: 0 0 15px 0 !important;
+    }
+    
+    .logout-btn {
+        display: inline-block !important;
+        width: auto !important;
+        padding: 10px 30px !important;
+    }
+    
+    /* Admin Calendar */
+    #admin-calendar {
+        margin: 15px 0 !important;
+    }
+    
+    /* Unavailable button */
+    #unavail-select-btn {
+        width: 100% !important;
+        padding: 12px !important;
+        font-size: 14px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    /* Table containers */
+    .admin-table-container {
+        margin: 20px 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        width: 100% !important;
+    }
+    
+    .admin-table-container h3 {
+        background: #f8f8f8 !important;
+        padding: 10px 15px !important;
+        margin: 0 0 10px 0 !important;
+        border-left: 4px solid #007bff !important;
+        font-size: 1.1em !important;
+    }
+    
+    /* Hide original table structure on mobile */
+    .admin-table thead {
+        display: none !important;
+    }
+    
+    .admin-table,
+    .admin-table tbody {
+        display: block !important;
+        width: 100% !important;
+    }
+    
+    /* Convert rows to cards */
+    .admin-table tr {
+        display: block !important;
+        margin-bottom: 12px !important;
+        background: white !important;
+        border: 1px solid #ddd !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+    
+    /* Style each cell as a row in the card */
+    .admin-table td {
+        display: block !important;
+        text-align: left !important;
+        padding: 5px 0 !important;
+        border: none !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        word-wrap: break-word !important;
+    }
+    
+    /* Add labels using CSS (simpler approach) */
+    .admin-table td:nth-child(1):before { content: "Name: "; font-weight: 600; color: #666; }
+    .admin-table td:nth-child(2):before { content: "Email: "; font-weight: 600; color: #666; }
+    .admin-table td:nth-child(3):before { content: "Reason: "; font-weight: 600; color: #666; }
+    .admin-table td:nth-child(4):before { content: "Dates: "; font-weight: 600; color: #666; }
+    .admin-table td:nth-child(5):before { content: "Submitted: "; font-weight: 600; color: #666; }
+    .admin-table td:nth-child(6):before { content: "Status: "; font-weight: 600; color: #666; }
+    .admin-table td:nth-child(7):before { content: "Approved By: "; font-weight: 600; color: #666; }
+    .admin-table td:nth-child(8):before { content: "Reminder: "; font-weight: 600; color: #666; }
+    
+    /* Special handling for empty approved_by field */
+    .admin-table td:nth-child(7):empty {
+        display: none !important;
+    }
+    
+    /* Action buttons row */
+    .admin-table td:last-child {
+        padding-top: 10px !important;
+        margin-top: 10px !important;
+        border-top: 1px solid #eee !important;
+    }
+    
+    .admin-table td:last-child:before {
+        content: none !important; /* No label for actions */
+    }
+    
+    /* Action buttons - responsive layout */
+    .action-btns {
+        display: flex !important;
+        gap: 5px !important;
+        width: 100% !important;
+        justify-content: stretch !important;
+    }
+    
+    .action-btns button {
+        flex: 1 !important;
+        padding: 8px 5px !important;
+        font-size: 11px !important;
+        border-radius: 5px !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        min-width: 0 !important;
+    }
+    
+    /* Status badges */
+    .status-badge {
+        display: inline-block !important;
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+        margin: 0 !important;
+    }
+    
+    /* Reminder Settings Box */
+    .reminder-settings-box {
+        background: #f8f8f8 !important;
+        border-radius: 8px !important;
+        padding: 15px !important;
+        margin: 20px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .reminder-settings-box h3 {
+        font-size: 1.1em !important;
+        margin-top: 0 !important;
+        margin-bottom: 15px !important;
+        color: #333 !important;
+    }
+    
+    .reminder-settings-box label {
+        display: block !important;
+        margin: 12px 0 !important;
+        font-size: 14px !important;
+        line-height: 1.4 !important;
+    }
+    
+    .reminder-settings-box input[type="checkbox"] {
+        margin-right: 8px !important;
+        vertical-align: middle !important;
+    }
+    
+    .reminder-settings-box input[type="number"] {
+        width: 60px !important;
+        padding: 6px !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Notification toggles section */
+    .reminder-settings-box div[style*="margin: 12px"] {
+        border-top: 1px solid #ddd !important;
+        padding-top: 15px !important;
+        margin-top: 15px !important;
+    }
+    
+    .reminder-settings-box form[style="display:inline;"] {
+        display: block !important;
+        margin: 10px 0 !important;
+    }
+    
+    .admin-toggle-btn {
+        display: inline-block !important;
+        padding: 6px 12px !important;
+        margin: 5px 5px 5px 0 !important;
+        font-size: 12px !important;
+        min-width: 70px !important;
+    }
+    
+    /* Email addresses after toggle buttons */
+    .reminder-settings-box form span {
+        display: inline-block !important;
+        font-size: 13px !important;
+        word-break: break-all !important;
+    }
+    
+    /* Save button full width */
+    .reminder-settings-box button[name="jcubhub_save_reminder_settings"] {
+        width: 100% !important;
+        padding: 12px !important;
+        font-size: 15px !important;
+        background: #007bff !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+        margin-top: 15px !important;
+    }
+    
+    /* Pending reminder hours text */
+    .reminder-settings-box span[style*="font-size:0.95em"] {
+        display: block !important;
+        margin-top: 5px !important;
+        font-size: 12px !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Bot log section if present */
+    #toggle-bot-log {
+        width: 100% !important;
+        padding: 10px !important;
+        font-size: 14px !important;
+    }
+    
+    #bot-log-content {
+        font-size: 11px !important;
+        max-height: 200px !important;
+        word-wrap: break-word !important;
+    }
+}
+
+/* Extra small devices (phones in portrait) */
+@media screen and (max-width: 375px) {
+    .action-btns button {
+        font-size: 10px !important;
+        padding: 7px 3px !important;
+    }
+    
+    .admin-table td {
+        font-size: 13px !important;
+    }
+    
+    .admin-table td:before {
+        font-size: 12px !important;
+    }
+    
+    .admin-toggle-btn {
+        font-size: 11px !important;
+        padding: 5px 8px !important;
+    }
+}
